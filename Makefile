@@ -24,6 +24,7 @@ PPR_ROOT ?= ../../mp4
 
 PATCHER := $(OUT)/a53_ppr_patcher.elf
 PROBE := $(OUT)/a53_ppr_probe.elf
+DUMP_SRAM := $(OUT)/a53_ppr_dump_sram.elf
 INSTALL := $(OUT)/a53_ppr_install.elf
 INSTALL_FAST := $(OUT)/a53_ppr_install_fast.elf
 NATIVE := $(OUT)/a53_ppr_native.elf
@@ -40,6 +41,9 @@ all: verify host-test $(PATCHER) $(INSTALL) $(INSTALL_FAST) $(NATIVE) \
 
 $(PROBE): $(SOURCES) $(PROFILE_INCLUDE) | $(OUT)
 	$(CC) $(CFLAGS) -DPPR_DEFAULT_PROBE_ONLY=1 -o $@ $(SOURCES)
+
+$(DUMP_SRAM): $(SOURCES) $(PROFILE_INCLUDE) | $(OUT)
+	$(CC) $(CFLAGS) -DPPR_DEFAULT_DUMP_SRAM=1 -o $@ $(SOURCES)
 
 $(OUT):
 	mkdir -p $@

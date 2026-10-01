@@ -1060,8 +1060,11 @@ static int parse_read_response(const uint8_t *raw, size_t raw_size,
                               response_command_count, &view) != 0 ||
         find_response_command(raw, &view, command_number,
                               SDBGP_RES_READ_MEMORY, &command_offset,
-                              &command) != 0)
+                              &command) != 0) {
+        printf("[!] A53 read envelope: raw=%zu offset=%zu seq=%u\n",
+               raw_size, response_offset, sequence_no);
         return -1;
+    }
 
     size_t result_offset = command_offset + command.self_size;
     struct sdbgp_read_result result;
@@ -1071,8 +1074,14 @@ static int parse_read_response(const uint8_t *raw, size_t raw_size,
     memcpy(&result, raw + result_offset, sizeof(result));
     if (result.self_size != sizeof(result) || result.status != 0 ||
         result.addr != expected_address || result.requested != expected_size ||
-        result.transferred != expected_size)
+        result.transferred != expected_size) {
+        printf("[!] A53 read result: status=0x%x self=%u "
+               "addr=0x%lx requested=%lu transferred=%lu\n",
+               result.status, result.self_size, (unsigned long)result.addr,
+               (unsigned long)result.requested,
+               (unsigned long)result.transferred);
         return -1;
+    }
 
     size_t data_offset = result_offset + sizeof(result);
     if (expected_size > command_offset + command.total_size - data_offset)

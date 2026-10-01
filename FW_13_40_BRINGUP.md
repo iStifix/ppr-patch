@@ -10,6 +10,22 @@ release string and target type, then exits before profile lookup, fast
 transport enablement or any A53 write. Its output establishes which exact
 retail/testkit/devkit image must be analyzed.
 
+On a retail 13.40 console, GET_CONF returned
+`cex(1.1.2.01):Oberon-KDE 2026/05/28 02:23 releases/13.40 228687`.
+The old `PPR_PATCH_LAYOUT_PA` (`0x887f0000`) returned SDBGP read status
+`0x20` with zero transferred bytes, even for a 4-byte read. This is an
+address/layout change, not a general READ_MEMORY failure: low A53 SRAM
+addresses through `0x8ffff` were readable. The separate
+`build/a53_ppr_dump_sram.elf` produced a complete 0x90000-byte read-only
+snapshot from the owner's console. That snapshot is intentionally ignored by
+Git and is not part of this repository.
+
+The SRAM snapshot contains AArch64 code and late-ABI function prologues, but
+the complete old helper and terminal SHA signatures do not match. Do not
+promote any partial signature match to a patch site. The mapped DEV/G6 image
+and the new runtime layout still need exact extraction and independent
+verification.
+
 To produce a 13.40 profile, obtain the matching full A53 ELF or `mp4_dram`
 image from the operator's own console/firmware. Keep the image and any live
 memory dump outside this repository. Record its SHA-256 and embedded release

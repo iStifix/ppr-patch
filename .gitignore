@@ -4,4 +4,6 @@
 /ppr_wrapper.verified.elf
 /ppr_runtime.bin
 /ppr_plaintext.bin
+fw1340-*.bin
+fw1340-*.log
 /*.plist
