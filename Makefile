@@ -23,6 +23,7 @@ A53_ARM64_OBJCOPY := $(PS5_PAYLOAD_SDK)/bin/llvm-objcopy
 PPR_ROOT ?= ../../mp4
 
 PATCHER := $(OUT)/a53_ppr_patcher.elf
+PROBE := $(OUT)/a53_ppr_probe.elf
 INSTALL := $(OUT)/a53_ppr_install.elf
 INSTALL_FAST := $(OUT)/a53_ppr_install_fast.elf
 NATIVE := $(OUT)/a53_ppr_native.elf
@@ -36,6 +37,9 @@ KMB_RANGE_UNINSTALL := $(OUT)/a53_kmb_range_uninstall.elf
 
 all: verify host-test $(PATCHER) $(INSTALL) $(INSTALL_FAST) $(NATIVE) \
 	$(PLAINTEXT) $(UNINSTALL) $(KMB_RANGE_INSTALL) $(KMB_RANGE_UNINSTALL)
+
+$(PROBE): $(SOURCES) $(PROFILE_INCLUDE) | $(OUT)
+	$(CC) $(CFLAGS) -DPPR_DEFAULT_PROBE_ONLY=1 -o $@ $(SOURCES)
 
 $(OUT):
 	mkdir -p $@

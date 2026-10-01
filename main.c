@@ -34,6 +34,9 @@
 #ifndef PPR_DEFAULT_TIME_ACCELERATION
 #define PPR_DEFAULT_TIME_ACCELERATION 0
 #endif
+#ifndef PPR_DEFAULT_PROBE_ONLY
+#define PPR_DEFAULT_PROBE_ONLY 0
+#endif
 
 static void raise_fd_limit(void) {
     struct rlimit limit;
@@ -48,6 +51,7 @@ static void usage(const char *program) {
     printf("usage: %s [action] [transport options]\n", program);
     puts("actions:");
     puts("  --status                  inspect the installed patch");
+    puts("  --probe                   read A53 version/target without a profile or writes");
     puts("  --install --idle          install the dynamic selector");
     puts("  --uninstall --idle        restore exact stock bytes");
     puts("  --mode native --idle      select native mode");
@@ -69,6 +73,7 @@ int main(int argc, char **argv) {
     int idle_acknowledged = PPR_DEFAULT_IDLE_ACK;
     int fast_mode = PPR_DEFAULT_FAST;
     int time_acceleration = PPR_DEFAULT_TIME_ACCELERATION;
+    int probe_only = PPR_DEFAULT_PROBE_ONLY;
     struct a53_transport_options options = {
         .persistent = PPR_DEFAULT_PERSISTENT,
         .batch = PPR_DEFAULT_BATCH,
@@ -82,6 +87,9 @@ int main(int argc, char **argv) {
             strcmp(argv[i], "--ppr-status") == 0) {
             if (selected++) goto conflict;
             action = PPR_PATCH_STATUS;
+        } else if (strcmp(argv[i], "--probe") == 0) {
+            if (selected++) goto conflict;
+            probe_only = 1;
         } else if (strcmp(argv[i], "--install") == 0 ||
                    strcmp(argv[i], "--ppr-install") == 0) {
             if (selected++) goto conflict;
@@ -185,6 +193,11 @@ int main(int argc, char **argv) {
     uint32_t target_firmware = a53_firmware ? a53_firmware : system_firmware;
     enum ppr_target_type target = ppr_patch_parse_target(version);
     printf("[*] A53 target: %s\n", ppr_patch_target_name(target));
+    if (probe_only) {
+        puts("[*] read-only probe complete; no profile selected or A53 write attempted");
+        ppr_notify_flush();
+        return 0;
+    }
     if (!ppr_patch_target_supported(target_firmware, target)) {
         printf("[!] no exact PPR profile for FW 0x%08x target %s\n",
                target_firmware, ppr_patch_target_name(target));
